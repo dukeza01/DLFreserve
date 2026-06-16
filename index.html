@@ -684,8 +684,8 @@ input[type="time"] {
             <select id="room-select"></select>
           </div>
           <div class="field">
-            <label for="room-date">วันประชุม (วว/ดด/ปปปป)</label>
-            <input id="room-date" type="text" placeholder="15/06/2569" maxlength="10" required>
+            <label for="room-date">วันประชุม</label>
+            <input id="room-date" type="date" required>
           </div>
           <div class="field-row">
             <div class="field">
@@ -738,8 +738,8 @@ input[type="time"] {
             <input id="car-destination" type="text">
           </div>
           <div class="field">
-            <label for="car-date">วันที่ใช้รถ (วว/ดด/ปปปป)</label>
-            <input id="car-date" type="text" placeholder="15/06/2569" maxlength="10" required>
+            <label for="car-date">วันที่ใช้รถ</label>
+            <input id="car-date" type="date" required>
           </div>
           <div class="field">
             <label>ผู้ร่วมเดินทาง</label>
@@ -842,7 +842,7 @@ function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(
 function fmtThaiDate(s){
   if(!s) return '-';
   const [y,m,d]=s.split('-').map(Number);
-  return `${pad(d)}/${pad(m)}/${y+543}`;
+  return `${pad(d)} ${MONTHS[m-1]} ${y+543}`;
 }
 /* parse dd/mm/yyyy(BE) → yyyy-mm-dd(AD) internal */
 function parseDmyToYmd(str){
@@ -860,7 +860,7 @@ function ymdToDmy(s){
   const [y,m,d]=s.split('-').map(Number);
   return `${pad(d)}/${pad(m)}/${y+543}`;
 }
-function fmtTime(t){ return t ? t+' น.' : '-'; }
+function fmtTime(t){ return t ? t.replace(':','.') + ' น.' : '-'; }
 
 let ROOM_BOOKINGS = [];
 let CAR_BOOKINGS  = [];
@@ -972,9 +972,8 @@ const carFields    = document.getElementById('car-fields');
 const today = todayStr();
 
 function setAllDates(){
-  const dmy = ymdToDmy(today);
-  document.getElementById('room-date').value = dmy;
-  document.getElementById('car-date').value  = dmy;
+  document.getElementById('room-date').value = today;
+  document.getElementById('car-date').value  = today;
 }
 
 let currentService = 'room';
@@ -1006,7 +1005,7 @@ function openModal(service, entry){
     setRequiredFields(roomFields,true);
     if(entry){
       document.getElementById('room-select').value     = entry.room||ROOMS[0];
-      document.getElementById('room-date').value       = ymdToDmy(entry.date||today);
+      document.getElementById('room-date').value       = entry.date||today;
       document.getElementById('room-time-start').value = entry.timeStart||'09:00';
       document.getElementById('room-time-end').value   = entry.timeEnd||'12:00';
       document.getElementById('room-dept').value       = entry.dept||DEPTS[0];
@@ -1026,7 +1025,7 @@ function openModal(service, entry){
       document.getElementById('car-dept').value        = entry.dept||DEPTS[0];
       document.getElementById('car-purpose').value     = entry.purpose||'';
       document.getElementById('car-destination').value = entry.destination||'';
-      document.getElementById('car-date').value        = ymdToDmy(entry.date||today);
+      document.getElementById('car-date').value        = entry.date||today;
       document.getElementById('car-time-start').value  = entry.timeStart||'09:00';
       document.getElementById('car-time-end').value    = entry.timeEnd||'12:00';
       document.getElementById('car-plate').value       = entry.plate||'';
@@ -1128,8 +1127,7 @@ form.addEventListener('submit', async e=>{
   if(currentService==='room'){
     const requester=document.getElementById('room-requester').value.trim();
     const purpose  =document.getElementById('room-purpose').value.trim();
-    const dateRaw  =document.getElementById('room-date').value.trim();
-    const date     =parseDmyToYmd(dateRaw);
+    const date     =document.getElementById('room-date').value;
     if(!requester||!purpose||!date){ formError.classList.remove('hidden'); return; }
     const data={
       kind:'room',
@@ -1154,8 +1152,7 @@ form.addEventListener('submit', async e=>{
   } else {
     const requester=document.getElementById('car-requester').value.trim();
     const purpose  =document.getElementById('car-purpose').value.trim();
-    const dateRaw  =document.getElementById('car-date').value.trim();
-    const date     =parseDmyToYmd(dateRaw);
+    const date     =document.getElementById('car-date').value;
     if(!requester||!purpose||!date){ formError.classList.remove('hidden'); return; }
     const companions=getCompanions();
     const data={
