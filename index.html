@@ -1174,13 +1174,13 @@ function renderRoomLegend(){
 }
 
 /* ── GAS Sync ── */
-let GAS_URL = localStorage.getItem('https://script.google.com/macros/s/AKfycbx-F-5AEa6QERHEK10s8pOCWXlX6irIjddztaFi0PbVEvv-f9r6huaxHzgG1TsXIIBjXw/exec') || '';
+let GAS_URL = localStorage.getItem('https://script.google.com/macros/s/AKfycbzdVi547INnBG1J2RJ2ZS0v6uDcdhFu3-XkPLfMvNYThkPRiuakItJo2KYoUy4rkhwy7A/exec') || '';
 function setupGasSync(){
   const btn = document.getElementById('gas-sync-btn');
   const cfgBtn = document.getElementById('gas-cfg-btn');
   if(!btn || !cfgBtn) return;
   btn.addEventListener('click', async ()=>{
-    if(!GAS_URL){ alert('กรุณาตั้งค่า GAS URL ก่อน'); return; }
+    if(!GAS_URL){ alert('https://script.google.com/macros/s/AKfycbzdVi547INnBG1J2RJ2ZS0v6uDcdhFu3-XkPLfMvNYThkPRiuakItJo2KYoUy4rkhwy7A/exec'); return; }
     btn.disabled=true; btn.textContent='กำลังซิ้งค์...';
     try{
       const payload = { rooms: ROOM_BOOKINGS, cars: CAR_BOOKINGS };
