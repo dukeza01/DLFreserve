@@ -393,6 +393,17 @@ body::before {
   background: #F8F9FB; color: var(--ink);
   transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background var(--dur) var(--ease);
 }
+/* Force 24h time display - hide AM/PM */
+input[type="time"]::-webkit-datetime-edit-ampm-field {
+  display: none !important;
+  width: 0 !important;
+  visibility: hidden !important;
+}
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 .field input:focus, .field select:focus, .field textarea:focus {
   border-color: var(--accent); background: #fff;
   box-shadow: 0 0 0 3.5px rgba(var(--accent-r),var(--accent-g),var(--accent-b),.12);
@@ -461,6 +472,93 @@ body::before {
   transition: .28s var(--spring);
 }
 .toast.show { opacity: 1; transform: translateY(0); }
+
+/* Center popup alert */
+.popup-overlay {
+  position: fixed; inset: 0;
+  background: rgba(12,21,36,.45);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s var(--ease);
+}
+.popup-overlay.show { opacity: 1; pointer-events: all; }
+.popup-box {
+  background: #fff; border-radius: 20px;
+  box-shadow: var(--sh3);
+  padding: 28px 32px; max-width: 380px; width: 90%;
+  text-align: center;
+  transform: scale(.92) translateY(14px);
+  transition: transform .28s var(--spring);
+}
+.popup-overlay.show .popup-box { transform: none; }
+.popup-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px;
+  font-size: 1.5rem;
+}
+.popup-icon.success { background: #E6FAF1; color: #10B981; }
+.popup-icon.error   { background: #FEF2F2; color: #DC2626; }
+.popup-icon.info    { background: #EEF2FF; color: #5B5CF6; }
+.popup-icon.warning { background: #FEF9E7; color: #F59E0B; }
+.popup-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem; font-weight: 800;
+  letter-spacing: -.02em; color: var(--ink);
+  margin-bottom: 8px;
+}
+.popup-msg {
+  font-size: .84rem; color: var(--muted);
+  line-height: 1.6; margin-bottom: 20px;
+}
+.popup-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 28px; border-radius: 11px;
+  font-family: 'Noto Sans Thai', sans-serif;
+  font-size: .84rem; font-weight: 700;
+  border: none; cursor: pointer;
+  background: var(--accent); color: white;
+  box-shadow: 0 4px 12px rgba(var(--accent-r),var(--accent-g),var(--accent-b),.3);
+  transition: all var(--dur) var(--ease);
+}
+.popup-btn:hover { transform: translateY(-1px); }
+.popup-btn.secondary {
+  background: #F5F6FA; color: var(--muted);
+  box-shadow: none; border: 1.5px solid var(--line);
+  margin-right: 8px;
+}
+/* GAS Config panel */
+.gas-config-panel {
+  background: #fff; border: 1.5px solid var(--line);
+  border-radius: 16px; padding: 18px 20px;
+  margin-top: 4px; box-shadow: var(--sh2);
+  display: none;
+}
+.gas-config-panel.show { display: block; }
+.gas-config-panel input {
+  width: 100%; border: 1.5px solid var(--line);
+  border-radius: 10px; padding: 9px 12px;
+  font-size: .84rem; font-family: monospace;
+  color: var(--ink); background: #F8F9FB;
+  outline: none; margin-bottom: 10px;
+}
+.gas-config-panel input:focus { border-color: var(--accent); background: #fff; }
+.gas-config-label {
+  font-size: .7rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .05em;
+  margin-bottom: 6px; display: block;
+  font-family: 'Inter', sans-serif;
+}
+.gas-status {
+  font-size: .72rem; font-weight: 600;
+  padding: 4px 10px; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.gas-status.ok    { background: #E6FAF1; color: #047857; }
+.gas-status.none  { background: #F3F4F6; color: var(--muted); }
+.gas-status.err   { background: #FEF2F2; color: #DC2626; }
 
 /* ══════════════════════════════════════════
    FOOTER
@@ -589,11 +687,11 @@ body::before {
           <div class="field-row">
             <div class="field">
               <label for="room-time-start">เวลาเริ่ม (24 ชม.)</label>
-              <input id="room-time-start" type="time" value="09:00">
+              <input id="room-time-start" type="time" value="09:00" step="600">
             </div>
             <div class="field">
               <label for="room-time-end">เวลาสิ้นสุด (24 ชม.)</label>
-              <input id="room-time-end" type="time" value="12:00">
+              <input id="room-time-end" type="time" value="12:00" step="600">
             </div>
           </div>
           <div class="field">
@@ -650,11 +748,11 @@ body::before {
           <div class="field-row">
             <div class="field">
               <label for="car-time-start">เวลาเริ่ม (24 ชม.)</label>
-              <input id="car-time-start" type="time" value="09:00">
+              <input id="car-time-start" type="time" value="09:00" step="600">
             </div>
             <div class="field">
               <label for="car-time-end">เวลาถึง (24 ชม.)</label>
-              <input id="car-time-end" type="time" value="12:00">
+              <input id="car-time-end" type="time" value="12:00" step="600">
             </div>
           </div>
           <div class="field-row">
@@ -686,6 +784,32 @@ body::before {
 </div>
 
 <div id="toast" class="toast"></div>
+
+<!-- Center Popup Alert -->
+<div id="popup-overlay" class="popup-overlay" aria-live="polite">
+  <div class="popup-box">
+    <div id="popup-icon" class="popup-icon success">✓</div>
+    <div id="popup-title" class="popup-title"></div>
+    <div id="popup-msg" class="popup-msg"></div>
+    <div>
+      <button id="popup-cancel-btn" class="popup-btn secondary" style="display:none">ยกเลิก</button>
+      <button id="popup-ok-btn" class="popup-btn">ตกลง</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAS Config Panel -->
+<div id="gas-config-panel" class="gas-config-panel" style="position:fixed;bottom:70px;right:22px;width:340px;z-index:100;">
+  <label class="gas-config-label">Google Apps Script Web App URL</label>
+  <input id="gas-url-input" type="text" placeholder="https://script.google.com/macros/s/AKfycbzBW_U5zoGaW_8d8k9tZipWpnmAzG7hGL4tBpxIaJue_wk5_3asYQnYl3SGpdqQ239u2Q/exec">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+    <span id="gas-status-badge" class="gas-status none">● ยังไม่ได้ตั้งค่า</span>
+    <div style="display:flex;gap:6px;">
+      <button id="gas-url-save" class="popup-btn" style="padding:7px 16px;font-size:.76rem;">บันทึก</button>
+      <button id="gas-url-cancel" class="popup-btn secondary" style="padding:7px 14px;font-size:.76rem;margin:0;">ปิด</button>
+    </div>
+  </div>
+</div>
 
 <!-- ════════════════════════════════════════
      JAVASCRIPT — all logic preserved
@@ -899,10 +1023,70 @@ function showToast(msg){
   setTimeout(()=>toast.classList.remove('show'),2600);
 }
 
+/* ── Popup system ── */
+let _popupResolve = null;
+function showPopup({ type='info', title='', msg='', okLabel='ตกลง', cancelLabel=null }){
+  return new Promise(resolve=>{
+    _popupResolve = resolve;
+    const overlay   = document.getElementById('popup-overlay');
+    const iconEl    = document.getElementById('popup-icon');
+    const titleEl   = document.getElementById('popup-title');
+    const msgEl     = document.getElementById('popup-msg');
+    const okBtn     = document.getElementById('popup-ok-btn');
+    const cancelBtn = document.getElementById('popup-cancel-btn');
+
+    const icons = { success:'✓', error:'✕', info:'ℹ', warning:'⚠' };
+    iconEl.className = `popup-icon ${type}`;
+    iconEl.textContent = icons[type] || 'ℹ';
+    titleEl.textContent = title;
+    msgEl.textContent = msg;
+    okBtn.textContent = okLabel;
+
+    if(cancelLabel){
+      cancelBtn.textContent = cancelLabel;
+      cancelBtn.style.display = '';
+    } else {
+      cancelBtn.style.display = 'none';
+    }
+    overlay.classList.add('show');
+  });
+}
+function closePopup(result){
+  document.getElementById('popup-overlay').classList.remove('show');
+  if(_popupResolve){ _popupResolve(result); _popupResolve=null; }
+}
+document.getElementById('popup-ok-btn').addEventListener('click', ()=>closePopup(true));
+document.getElementById('popup-cancel-btn').addEventListener('click', ()=>closePopup(false));
+document.getElementById('popup-overlay').addEventListener('click', e=>{
+  if(e.target===document.getElementById('popup-overlay')) closePopup(false);
+});
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && document.getElementById('popup-overlay').classList.contains('show')){
+    e.preventDefault(); closePopup(true);
+  }
+});
+
 newBookingBtn.addEventListener('click',()=>openModal(listTab));
 closeModalBtn.addEventListener('click',closeModal);
 cancelModalBtn.addEventListener('click',closeModal);
-modal.addEventListener('click',e=>{ if(e.target===modal) closeModal(); });
+// Close only when clicking the dark backdrop (not the white card)
+modal.addEventListener('mousedown', e=>{
+  if(e.target === modal) {
+    e._clickedBackdrop = true;
+  }
+});
+modal.addEventListener('click', e=>{
+  if(e._clickedBackdrop) closeModal();
+});
+// ESC key closes modal
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){
+    if(document.getElementById('popup-overlay').classList.contains('show')){
+      closePopup(false); return;
+    }
+    if(modal.classList.contains('show')) closeModal();
+  }
+});
 
 form.addEventListener('submit', async e=>{
   e.preventDefault();
@@ -929,7 +1113,8 @@ form.addEventListener('submit', async e=>{
       ROOM_BOOKINGS.push({id:uid(),...data});
     }
     await saveRooms(); closeModal();
-    showToast(editingId?'แก้ไขการจองห้องประชุมแล้ว':'บันทึกการจองห้องประชุมแล้ว');
+    await showPopup({ type:'success', title: editingId?'แก้ไขการจองแล้ว':'บันทึกการจองแล้ว',
+      msg: editingId?'แก้ไขการจองห้องประชุมเรียบร้อยแล้ว':'บันทึกการจองห้องประชุมเรียบร้อยแล้ว' });
     renderAll();
   } else {
     const requester=document.getElementById('car-requester').value.trim();
@@ -956,14 +1141,22 @@ form.addEventListener('submit', async e=>{
       CAR_BOOKINGS.push({id:uid(),...data});
     }
     await saveCars(); closeModal();
-    showToast(editingId?'แก้ไขการขอใช้รถแล้ว':'บันทึกการขอใช้รถแล้ว');
+    await showPopup({ type:'success', title: editingId?'แก้ไขการจองแล้ว':'บันทึกการจองแล้ว',
+      msg: editingId?'แก้ไขการขอใช้รถยนต์เรียบร้อยแล้ว':'บันทึกการขอใช้รถยนต์เรียบร้อยแล้ว' });
     renderAll();
   }
 });
 
 document.getElementById('delete-entry-btn').addEventListener('click', async()=>{
   if(!editingId) return;
-  if(!confirm('ยืนยันการลบรายการนี้หรือไม่?')) return;
+  const ok = await showPopup({
+    type: 'warning',
+    title: 'ยืนยันการลบ',
+    msg: 'คุณต้องการลบรายการนี้ใช่ไหม? ไม่สามารถกู้คืนได้',
+    okLabel: 'ลบ',
+    cancelLabel: 'ยกเลิก'
+  });
+  if(!ok) return;
   if(editingKind==='room'){
     ROOM_BOOKINGS=ROOM_BOOKINGS.filter(r=>r.id!==editingId);
     await saveRooms();
@@ -971,7 +1164,9 @@ document.getElementById('delete-entry-btn').addEventListener('click', async()=>{
     CAR_BOOKINGS=CAR_BOOKINGS.filter(c=>c.id!==editingId);
     await saveCars();
   }
-  closeModal(); showToast('ลบรายการแล้ว'); renderAll();
+  closeModal();
+  await showPopup({ type:'success', title:'ลบรายการแล้ว', msg:'ลบข้อมูลการจองออกจากระบบเรียบร้อย' });
+  renderAll();
 });
 
 /* ── Tabs ── */
@@ -1106,13 +1301,15 @@ function renderCalendar(){
   }
   calGrid.innerHTML=html;
 
-  calGrid.querySelectorAll('.cal-cell:not(.empty)').forEach(cell=>{
-    cell.addEventListener('click',()=>{
-      const date=cell.dataset.date;
-      calSelectedDate=(calSelectedDate===date)?null:date;
-      renderCalendar();
-    });
-  });
+  // Use event delegation for calendar cells (more reliable than per-cell listeners)
+  calGrid.onclick = function(e){
+    const cell = e.target.closest('.cal-cell:not(.empty)');
+    if(!cell) return;
+    const date = cell.dataset.date;
+    if(!date) return;
+    calSelectedDate = (calSelectedDate===date) ? null : date;
+    renderCalendar();
+  };
   renderCalDayList();
 }
 
@@ -1174,31 +1371,100 @@ function renderRoomLegend(){
 }
 
 /* ── GAS Sync ── */
-let GAS_URL = localStorage.getItem('https://script.google.com/macros/s/AKfycbzdVi547INnBG1J2RJ2ZS0v6uDcdhFu3-XkPLfMvNYThkPRiuakItJo2KYoUy4rkhwy7A/exec') || '';
+let GAS_URL = '';
+try { GAS_URL = localStorage.getItem('gas_url') || ''; } catch(e){}
+
+function updateGasStatusBadge(){
+  const badge = document.getElementById('gas-status-badge');
+  if(!badge) return;
+  if(GAS_URL){
+    badge.className='gas-status ok';
+    badge.textContent='● URL ตั้งค่าแล้ว';
+  } else {
+    badge.className='gas-status none';
+    badge.textContent='● ยังไม่ได้ตั้งค่า';
+  }
+}
+
 function setupGasSync(){
-  const btn = document.getElementById('gas-sync-btn');
-  const cfgBtn = document.getElementById('gas-cfg-btn');
-  if(!btn || !cfgBtn) return;
+  const btn     = document.getElementById('gas-sync-btn');
+  const cfgBtn  = document.getElementById('gas-cfg-btn');
+  const cfgPanel= document.getElementById('gas-config-panel');
+  const urlInput= document.getElementById('gas-url-input');
+  const saveBtn = document.getElementById('gas-url-save');
+  const cancelBtn=document.getElementById('gas-url-cancel');
+  if(!btn||!cfgBtn||!cfgPanel||!urlInput) return;
+
+  // Populate current URL
+  urlInput.value = GAS_URL;
+  updateGasStatusBadge();
+
+  cfgBtn.addEventListener('click', ()=>{
+    urlInput.value = GAS_URL;
+    cfgPanel.classList.toggle('show');
+  });
+  cancelBtn.addEventListener('click', ()=>cfgPanel.classList.remove('show'));
+  saveBtn.addEventListener('click', ()=>{
+    const url = urlInput.value.trim();
+    GAS_URL = url;
+    try { localStorage.setItem('gas_url', url); } catch(e){}
+    cfgPanel.classList.remove('show');
+    updateGasStatusBadge();
+    showPopup({ type:'success', title:'บันทึก URL แล้ว', msg:'ตั้งค่า Google Apps Script URL เรียบร้อย พร้อมซิ้งค์ข้อมูล' });
+  });
+
   btn.addEventListener('click', async ()=>{
-    if(!GAS_URL){ alert('https://script.google.com/macros/s/AKfycbzdVi547INnBG1J2RJ2ZS0v6uDcdhFu3-XkPLfMvNYThkPRiuakItJo2KYoUy4rkhwy7A/exec'); return; }
-    btn.disabled=true; btn.textContent='กำลังซิ้งค์...';
+    if(!GAS_URL){
+      await showPopup({
+        type:'warning', title:'ยังไม่ได้ตั้งค่า GAS URL',
+        msg:'กรุณากด ⚙️ เพื่อวาง Google Apps Script Web App URL ก่อนซิ้งค์'
+      });
+      return;
+    }
+    // Show loading state
+    btn.disabled=true;
+    const btnIcon = btn.querySelector('i');
+    const btnSpan = btn.querySelector('span');
+    if(btnSpan) btnSpan.textContent='กำลังซิ้งค์...';
+
     try{
       const payload = { rooms: ROOM_BOOKINGS, cars: CAR_BOOKINGS };
-      const res = await fetch(GAS_URL, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(payload)
+      // ส่งเป็น URLSearchParams + text/plain เพื่อหลีกเลี่ยง CORS preflight
+      const body = 'payload=' + encodeURIComponent(JSON.stringify(payload));
+
+      await fetch(GAS_URL, {
+        method: 'POST',
+        mode: 'no-cors',          // GAS ไม่ส่ง CORS headers กลับมา จึงต้องใช้ no-cors
+        headers: { 'Content-Type': 'text/plain' },
+        body: body
       });
-      const txt = await res.text();
-      showToast('ซิ้งค์ข้อมูลสำเร็จ ✓');
+
+      // no-cors = ไม่รู้ผลลัพธ์ แต่ถ้า fetch ไม่ throw = ส่งได้แล้ว
+      if(btnSpan) btnSpan.textContent='ซิ้งค์ Sheet';
+      btn.disabled=false;
+      await showPopup({
+        type:'success',
+        title:'ส่งข้อมูลสำเร็จ ✓',
+        msg:`ส่งข้อมูลไปยัง Google Sheet แล้ว
+🏢 ห้องประชุม: ${ROOM_BOOKINGS.length} รายการ
+🚗 รถยนต์: ${CAR_BOOKINGS.length} รายการ
+
+(ตรวจสอบใน Google Sheet ได้เลย)`
+      });
     } catch(err){
-      showToast('ซิ้งค์ล้มเหลว: '+err.message);
+      if(btnSpan) btnSpan.textContent='ซิ้งค์ Sheet';
+      btn.disabled=false;
+      await showPopup({
+        type:'error', title:'ซิ้งค์ล้มเหลว',
+        msg:'เกิดข้อผิดพลาด: ' + err.message +
+            '
+
+สิ่งที่ต้องตรวจสอบ:
+• GAS URL ถูกต้องหรือไม่
+• Deploy ใหม่เลือก "Anyone" แล้วหรือยัง
+• ดู Console (F12) สำหรับ error เพิ่มเติม'
+      });
     }
-    btn.disabled=false; btn.textContent='ซิ้งค์ Google Sheet';
-  });
-  cfgBtn.addEventListener('click', ()=>{
-    const url = prompt('วาง URL ของ Google Apps Script (Web App URL):', GAS_URL);
-    if(url !== null){ GAS_URL=url.trim(); localStorage.setItem('gas_url',GAS_URL); showToast('บันทึก GAS URL แล้ว'); }
   });
 }
 
