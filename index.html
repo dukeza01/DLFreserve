@@ -617,6 +617,9 @@ input[type="time"] {
       <button id="new-booking-btn" class="btn-add">
         <i data-lucide="plus"></i><span>จองใหม่</span>
       </button>
+      <button id="gas-refresh-btn" class="btn-add" style="background:#6B7280;box-shadow:none;" title="โหลดข้อมูลล่าสุดจาก Google Sheet">
+        <i data-lucide="refresh-cw"></i><span>โหลดใหม่</span>
+      </button>
       <button id="gas-sync-btn" class="btn-add" style="background:var(--car-dark);box-shadow:none;">
         <i data-lucide="cloud-upload"></i><span>ซิ้งค์ Sheet</span>
       </button>
@@ -801,7 +804,7 @@ input[type="time"] {
 <!-- GAS Config Panel -->
 <div id="gas-config-panel" class="gas-config-panel" style="position:fixed;bottom:70px;right:22px;width:340px;z-index:100;">
   <label class="gas-config-label">Google Apps Script Web App URL</label>
-  <input id="gas-url-input" type="text" placeholder="https://script.google.com/macros/s/AKfycbzBW_U5zoGaW_8d8k9tZipWpnmAzG7hGL4tBpxIaJue_wk5_3asYQnYl3SGpdqQ239u2Q/exec">
+  <input id="gas-url-input" type="text" placeholder="https://script.google.com/macros/s/AKfycbzAkMoaL_687vTcV2CHQjLXAQDzC4L3QHpVk7AuD2T93GYoPTswxtRniyMjYL5GGZz_Sw/exec">
   <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
     <span id="gas-status-badge" class="gas-status none">● ยังไม่ได้ตั้งค่า</span>
     <div style="display:flex;gap:6px;">
@@ -862,14 +865,46 @@ function fmtTime(t){ return t ? t+' น.' : '-'; }
 let ROOM_BOOKINGS = [];
 let CAR_BOOKINGS  = [];
 
+/* ── Data layer (GAS-first, localStorage fallback) ── */
+
 async function loadData(){
-  try{ const r=await window.storage.get('rooms',true); ROOM_BOOKINGS=r?JSON.parse(r.value):SEED_ROOMS.map(x=>({...x,id:uid(),kind:'room'})); }
+  if(GAS_URL){
+    try{
+      const resp = await fetch(GAS_URL + '?action=data', { method:'GET' });
+      const json = await resp.json();
+      if(json.ok && Array.isArray(json.rooms)){
+        ROOM_BOOKINGS = json.rooms.map(x=>({...x, kind:'room'}));
+        CAR_BOOKINGS  = json.cars.map(x=>({...x, kind:'car'}));
+        // แคชไว้ใน localStorage เผื่อเปิด offline
+        try{ localStorage.setItem('officeflow_rooms', JSON.stringify(ROOM_BOOKINGS)); }catch(_){}
+        try{ localStorage.setItem('officeflow_cars',  JSON.stringify(CAR_BOOKINGS));  }catch(_){}
+        return;
+      }
+    } catch(err){ console.warn('GAS load failed, falling back to localStorage:', err); }
+  }
+  // fallback → localStorage → seed data
+  try{ const r=localStorage.getItem('officeflow_rooms'); ROOM_BOOKINGS=r?JSON.parse(r):SEED_ROOMS.map(x=>({...x,id:uid(),kind:'room'})); }
   catch(e){ ROOM_BOOKINGS=SEED_ROOMS.map(x=>({...x,id:uid(),kind:'room'})); }
-  try{ const c=await window.storage.get('cars',true); CAR_BOOKINGS=c?JSON.parse(c.value):SEED_CARS.map(x=>({...x,id:uid(),kind:'car'})); }
+  try{ const c=localStorage.getItem('officeflow_cars');  CAR_BOOKINGS=c?JSON.parse(c):SEED_CARS.map(x=>({...x,id:uid(),kind:'car'})); }
   catch(e){ CAR_BOOKINGS=SEED_CARS.map(x=>({...x,id:uid(),kind:'car'})); }
 }
-async function saveRooms(){ try{ await window.storage.set('rooms',JSON.stringify(ROOM_BOOKINGS),true); }catch(e){ console.error(e); } }
-async function saveCars(){  try{ await window.storage.set('cars', JSON.stringify(CAR_BOOKINGS), true); }catch(e){ console.error(e); } }
+
+async function saveRooms(){
+  try{ localStorage.setItem('officeflow_rooms', JSON.stringify(ROOM_BOOKINGS)); }catch(e){ console.error(e); }
+  autoSyncToGas();
+}
+async function saveCars(){
+  try{ localStorage.setItem('officeflow_cars', JSON.stringify(CAR_BOOKINGS)); }catch(e){ console.error(e); }
+  autoSyncToGas();
+}
+
+/* ซิ้งค์อัตโนมัติหลังบันทึก/ลบ (fire-and-forget, no-cors) */
+function autoSyncToGas(){
+  if(!GAS_URL) return;
+  const body = 'payload=' + encodeURIComponent(JSON.stringify({ rooms:ROOM_BOOKINGS, cars:CAR_BOOKINGS }));
+  fetch(GAS_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body })
+    .catch(err => console.warn('Auto-sync to GAS failed:', err));
+}
 
 function todayStr(){ return ymd(new Date()); }
 
@@ -1387,15 +1422,15 @@ function updateGasStatusBadge(){
 }
 
 function setupGasSync(){
-  const btn     = document.getElementById('gas-sync-btn');
-  const cfgBtn  = document.getElementById('gas-cfg-btn');
-  const cfgPanel= document.getElementById('gas-config-panel');
-  const urlInput= document.getElementById('gas-url-input');
-  const saveBtn = document.getElementById('gas-url-save');
-  const cancelBtn=document.getElementById('gas-url-cancel');
+  const btn        = document.getElementById('gas-sync-btn');
+  const refreshBtn = document.getElementById('gas-refresh-btn');
+  const cfgBtn     = document.getElementById('gas-cfg-btn');
+  const cfgPanel   = document.getElementById('gas-config-panel');
+  const urlInput   = document.getElementById('gas-url-input');
+  const saveBtn    = document.getElementById('gas-url-save');
+  const cancelBtn  = document.getElementById('gas-url-cancel');
   if(!btn||!cfgBtn||!cfgPanel||!urlInput) return;
 
-  // Populate current URL
   urlInput.value = GAS_URL;
   updateGasStatusBadge();
 
@@ -1404,70 +1439,70 @@ function setupGasSync(){
     cfgPanel.classList.toggle('show');
   });
   cancelBtn.addEventListener('click', ()=>cfgPanel.classList.remove('show'));
-  saveBtn.addEventListener('click', ()=>{
+  saveBtn.addEventListener('click', async ()=>{
     const url = urlInput.value.trim();
     GAS_URL = url;
     try { localStorage.setItem('gas_url', url); } catch(e){}
     cfgPanel.classList.remove('show');
     updateGasStatusBadge();
-    showPopup({ type:'success', title:'บันทึก URL แล้ว', msg:'ตั้งค่า Google Apps Script URL เรียบร้อย พร้อมซิ้งค์ข้อมูล' });
+    if(url){
+      await loadData(); renderAll(); renderRoomLegend();
+      await showPopup({ type:'success', title:'บันทึก URL แล้ว ✓',
+        msg:'โหลดข้อมูลจาก Google Sheet เรียบร้อย\n🏢 ห้องประชุม: '+ROOM_BOOKINGS.length+' รายการ\n🚗 รถยนต์: '+CAR_BOOKINGS.length+' รายการ' });
+    } else {
+      await showPopup({ type:'success', title:'บันทึกแล้ว', msg:'ล้าง GAS URL แล้ว ระบบจะใช้ข้อมูลใน localStorage แทน' });
+    }
   });
 
+  /* ── ปุ่มโหลดใหม่จาก GAS ── */
+  if(refreshBtn){
+    refreshBtn.addEventListener('click', async ()=>{
+      if(!GAS_URL){
+        await showPopup({ type:'warning', title:'ยังไม่ได้ตั้งค่า GAS URL',
+          msg:'กรุณากด ⚙️ เพื่อวาง Google Apps Script Web App URL ก่อน' });
+        return;
+      }
+      refreshBtn.disabled=true;
+      const sp = refreshBtn.querySelector('span');
+      if(sp) sp.textContent='กำลังโหลด...';
+      try{
+        await loadData(); renderAll(); renderRoomLegend();
+        if(sp) sp.textContent='โหลดใหม่';
+        refreshBtn.disabled=false;
+        showToast('โหลดข้อมูลสำเร็จ — ห้อง '+ROOM_BOOKINGS.length+' / รถ '+CAR_BOOKINGS.length+' รายการ');
+      }catch(err){
+        if(sp) sp.textContent='โหลดใหม่';
+        refreshBtn.disabled=false;
+        await showPopup({ type:'error', title:'โหลดล้มเหลว', msg:'ไม่สามารถโหลดข้อมูลจาก GAS: '+err.message });
+      }
+    });
+  }
+
+  /* ── ปุ่มซิ้งค์ (push ข้อมูลขึ้น Sheet) ── */
   btn.addEventListener('click', async ()=>{
     if(!GAS_URL){
-      await showPopup({
-        type:'warning', title:'ยังไม่ได้ตั้งค่า GAS URL',
-        msg:'กรุณากด ⚙️ เพื่อวาง Google Apps Script Web App URL ก่อนซิ้งค์'
-      });
+      await showPopup({ type:'warning', title:'ยังไม่ได้ตั้งค่า GAS URL',
+        msg:'กรุณากด ⚙️ เพื่อวาง Google Apps Script Web App URL ก่อนซิ้งค์' });
       return;
     }
-    // Show loading state
     btn.disabled=true;
-    const btnIcon = btn.querySelector('i');
-    const btnSpan = btn.querySelector('span');
-    if(btnSpan) btnSpan.textContent='กำลังซิ้งค์...';
-
+    const sp = btn.querySelector('span');
+    if(sp) sp.textContent='กำลังซิ้งค์...';
     try{
-      const payload = { rooms: ROOM_BOOKINGS, cars: CAR_BOOKINGS };
-      // ส่งเป็น URLSearchParams + text/plain เพื่อหลีกเลี่ยง CORS preflight
-      const body = 'payload=' + encodeURIComponent(JSON.stringify(payload));
-
-      await fetch(GAS_URL, {
-        method: 'POST',
-        mode: 'no-cors',          // GAS ไม่ส่ง CORS headers กลับมา จึงต้องใช้ no-cors
-        headers: { 'Content-Type': 'text/plain' },
-        body: body
-      });
-
-      // no-cors = ไม่รู้ผลลัพธ์ แต่ถ้า fetch ไม่ throw = ส่งได้แล้ว
-      if(btnSpan) btnSpan.textContent='ซิ้งค์ Sheet';
+      const body = 'payload='+encodeURIComponent(JSON.stringify({rooms:ROOM_BOOKINGS,cars:CAR_BOOKINGS}));
+      await fetch(GAS_URL, {method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body});
+      if(sp) sp.textContent='ซิ้งค์ Sheet';
       btn.disabled=false;
-      await showPopup({
-        type:'success',
-        title:'ส่งข้อมูลสำเร็จ ✓',
-        msg:`ส่งข้อมูลไปยัง Google Sheet แล้ว
-🏢 ห้องประชุม: ${ROOM_BOOKINGS.length} รายการ
-🚗 รถยนต์: ${CAR_BOOKINGS.length} รายการ
-
-(ตรวจสอบใน Google Sheet ได้เลย)`
-      });
-    } catch(err){
-      if(btnSpan) btnSpan.textContent='ซิ้งค์ Sheet';
+      await showPopup({ type:'success', title:'ซิ้งค์สำเร็จ ✓',
+        msg:'ส่งข้อมูลไปยัง Google Sheet แล้ว\n🏢 ห้องประชุม: '+ROOM_BOOKINGS.length+' รายการ\n🚗 รถยนต์: '+CAR_BOOKINGS.length+' รายการ\n\n(ตรวจสอบใน Google Sheet ได้เลย)' });
+    }catch(err){
+      if(sp) sp.textContent='ซิ้งค์ Sheet';
       btn.disabled=false;
-      await showPopup({
-        type:'error', title:'ซิ้งค์ล้มเหลว',
-        msg:'เกิดข้อผิดพลาด: ' + err.message +
-            '
-
-สิ่งที่ต้องตรวจสอบ:
-• GAS URL ถูกต้องหรือไม่
-• Deploy ใหม่เลือก "Anyone" แล้วหรือยัง
-• ดู Console (F12) สำหรับ error เพิ่มเติม'
-      });
+      await showPopup({ type:'error', title:'ซิ้งค์ล้มเหลว',
+        msg:'เกิดข้อผิดพลาด: '+err.message+'\n\nตรวจสอบ:\n• GAS URL ถูกต้องหรือไม่\n• Deploy เลือก "Anyone" แล้วหรือยัง\n• ดู Console (F12) เพิ่มเติม' });
     }
   });
 }
-
 /* ── Init ── */
 (async function init(){
   lucide.createIcons();
