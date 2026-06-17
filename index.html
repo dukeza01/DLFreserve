@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OfficeFlow — จองห้องประชุมและรถยนต์</title>
+<title>ระบบจองห้องประชุม และยานพาหนะ</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,7 +11,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:         #ECEEF5;
+  --bg:         #d9e5e6;
+background-image:
+  radial-gradient(circle at 0% 0%, #dce8ff88 0%, transparent 45%),
+  radial-gradient(circle at 100% 100%, #e8d5ff66 0%, transparent 40%),
+  radial-gradient(circle at 60% 20%, #d0f0ff44 0%, transparent 35%);
+background-attachment: fixed;
   --panel:      #FFFFFF;
   --ink:        #0C1524;
   --muted:      #6B7280;
@@ -78,15 +83,25 @@ body::before {
 .brand-sub  { font-size:.7rem;color:var(--muted);margin-top:3px;font-weight:500; }
 #date-label { font-size:.8rem;color:var(--muted);font-weight:600;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 16px;box-shadow:var(--sh1);white-space:nowrap; }
 
-/* ─── TOP GRID: form left + stats right ─── */
-.top-grid {
+/* ─── MAIN 3-COLUMN GRID ─── */
+.main-grid {
   display:grid;
-  grid-template-columns:1fr 380px;
-  gap:20px;
+  grid-template-columns:290px 1fr 270px;
+  gap:18px;
   margin-bottom:20px;
   align-items:start;
 }
-@media(max-width:900px){ .top-grid{ grid-template-columns:1fr; } }
+@media(max-width:1200px){ .main-grid{ grid-template-columns:250px 1fr 240px; } }
+@media(max-width:900px) { .main-grid{ grid-template-columns:1fr; } }
+
+/* ─── CALENDAR COLUMN ─── */
+.cal-col .cal-inner { padding:14px 14px 0; }
+.cal-col .cal-inner .cal-header { margin-bottom:10px; }
+.cal-col #cal-day-list { padding:10px 14px 14px; max-height:300px; overflow-y:auto; }
+.cal-col .cal-list-head { margin-bottom:8px; }
+.cal-col #cal-grid { display:grid;grid-template-columns:repeat(7,1fr);gap:3px; }
+.cal-col .cal-cell { min-height:34px;border-radius:8px;padding:5px 3px 3px; }
+.cal-col .cal-cell .num { font-size:.66rem; }
 
 /* ─── PANEL ─── */
 .panel { background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:var(--sh2);overflow:hidden; }
@@ -162,14 +177,14 @@ input[type="time"] { -webkit-appearance:none;appearance:none; }
 .live-dot { width:8px;height:8px;border-radius:50%;background:#F59E0B;flex-shrink:0;animation:pulse 2s infinite; }
 @keyframes pulse{ 0%,100%{opacity:1} 50%{opacity:.4} }
 .count-badge { font-size:.72rem;font-weight:700;background:#F3F4F6;color:var(--muted);padding:3px 10px;border-radius:999px; }
-.recent-list { padding:12px 14px;max-height:280px;overflow-y:auto; }
+.recent-list { padding:12px 14px;max-height:380px;overflow-y:auto; }
 .upcoming-day-label { font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:.06em;font-family:'Inter',sans-serif;margin:10px 0 5px;padding-left:2px; }
 .upcoming-day-label:first-child { margin-top:0; }
 .upcoming-today-pill { display:inline-block;background:var(--accent-soft);color:var(--accent);font-size:.65rem;font-weight:700;border-radius:999px;padding:1px 7px;margin-left:6px;vertical-align:middle; }
 .empty-msg { text-align:center;padding:28px 12px;font-size:.8rem;color:var(--muted);opacity:.8; }
 
 /* ─── CALENDAR SECTION ─── */
-.cal-section { margin-bottom:18px; }
+.cal-col { overflow:visible; }
 .cal-inner { padding:22px 22px 0; }
 .cal-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:16px; }
 .cal-month-label { font-family:'Inter',sans-serif;font-size:1rem;font-weight:800;letter-spacing:-.02em; }
@@ -338,6 +353,53 @@ input[type="time"] { -webkit-appearance:none;appearance:none; }
 .gas-status.none { background:#F3F4F6;color:var(--muted); }
 .gas-status.err  { background:#FEF2F2;color:#DC2626; }
 
+/* ─── FORM PANEL ─── */
+.form-main-panel { /* grid constrains width */ }
+
+/* ─── STAT CARD CLICKABLE ─── */
+.stat-card { cursor:pointer;transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease); }
+.stat-card:hover { transform:translateY(-3px);box-shadow:var(--sh2); }
+
+/* ─── UPCOMING CARD (larger) ─── */
+.upcoming-card-lg {
+  background:#FAFBFD;border:1.5px solid var(--line);border-left:4px solid var(--line);
+  border-radius:12px;padding:11px 13px;margin-bottom:8px;cursor:pointer;
+  transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease),background var(--dur) var(--ease);
+}
+.upcoming-card-lg:hover { transform:translateX(3px);box-shadow:var(--sh2);background:#fff; }
+.upcoming-card-lg .uc-top { display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:4px; }
+.upcoming-card-lg .uc-name { font-size:.78rem;font-weight:700;color:var(--ink);line-height:1.3;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.upcoming-card-lg .uc-time { font-size:.7rem;font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap;flex-shrink:0; }
+.upcoming-card-lg .uc-meta { font-size:.72rem;color:var(--muted);line-height:1.6; }
+
+/* ─── PREVIEW MODAL ─── */
+.preview-backdrop { position:fixed;inset:0;background:rgba(12,21,36,.52);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px;z-index:60; }
+.preview-backdrop.show { display:flex; }
+.preview-box { width:min(520px,100%);background:#fff;border-radius:24px;box-shadow:var(--sh3);max-height:92vh;overflow-y:auto;animation:modalIn .28s var(--spring); }
+.preview-head { padding:22px 22px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px; }
+.preview-head-left { flex:1; }
+.preview-kind-badge { display:inline-flex;align-items:center;gap:5px;font-size:.68rem;font-weight:700;border-radius:999px;padding:3px 10px;margin-bottom:8px; }
+.preview-kind-badge.room { background:var(--room-soft);color:var(--room); }
+.preview-kind-badge.car  { background:var(--car-soft);color:var(--car-dark); }
+.preview-title { font-family:'Inter',sans-serif;font-size:1.05rem;font-weight:900;letter-spacing:-.025em;color:var(--ink);line-height:1.3; }
+.preview-body { padding:0 22px 22px; }
+.preview-section { margin-bottom:16px;padding:14px 16px;background:#F8F9FB;border-radius:14px; }
+.preview-section:last-child { margin-bottom:0; }
+.preview-row { display:flex;gap:8px;margin-bottom:8px;align-items:flex-start; }
+.preview-row:last-child { margin-bottom:0; }
+.preview-label { font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-family:'Inter',sans-serif;min-width:100px;padding-top:1px; }
+.preview-val { font-size:.84rem;color:var(--ink);font-weight:500;flex:1;line-height:1.5; }
+.preview-time-block { display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);border-radius:10px;padding:6px 12px;font-family:'Inter',sans-serif;font-weight:800;font-size:.9rem;margin-bottom:12px; }
+.preview-foot { display:flex;align-items:center;justify-content:space-between;gap:8px;padding:16px 22px;border-top:1px solid var(--line); }
+.btn-preview-edit { display:inline-flex;align-items:center;gap:7px;padding:10px 20px;background:var(--accent);color:#fff;font-family:'Noto Sans Thai',sans-serif;font-size:.84rem;font-weight:700;border:none;border-radius:12px;cursor:pointer;box-shadow:0 4px 14px rgba(var(--accent-r),var(--accent-g),var(--accent-b),.36);transition:all var(--dur) var(--ease); }
+.btn-preview-edit:hover { transform:translateY(-2px); }
+.btn-preview-edit i { width:15px;height:15px; }
+.btn-preview-del { display:inline-flex;align-items:center;gap:7px;padding:10px 16px;background:#FEF2F2;color:#DC2626;border:1.5px solid #FECACA;font-family:'Noto Sans Thai',sans-serif;font-size:.84rem;font-weight:700;border-radius:12px;cursor:pointer;transition:all var(--dur) var(--ease); }
+.btn-preview-del:hover { background:#FEE2E2; }
+.btn-preview-del i { width:15px;height:15px; }
+.btn-preview-close { display:inline-flex;align-items:center;gap:7px;padding:10px 16px;background:transparent;border:1.5px solid var(--line);color:var(--muted);font-family:'Noto Sans Thai',sans-serif;font-size:.84rem;font-weight:700;border-radius:12px;cursor:pointer;transition:all var(--dur) var(--ease); }
+.btn-preview-close:hover { background:#F5F6FA; }
+
 /* ─── HIDDEN ─── */
 .hidden { display:none!important; }
 
@@ -362,9 +424,12 @@ input[type="time"] { -webkit-appearance:none;appearance:none; }
   <!-- ── HEADER ── -->
   <header class="hd">
     <div class="brand">
-      <div class="brand-ico"><i data-lucide="building-2"></i></div>
-      <div>
-        <div class="brand-name">OfficeFlow</div>
+      <img class="org-logo"
+     src="https://dltv.ac.th/upload/data/users/0/316/CMS/images/logo%20dlf%20%E0%B8%AA%E0%B8%A1%E0%B8%9A%E0%B8%B9%E0%B8%A3%E0%B8%93%E0%B9%8C.png"
+     style="width: 50px; height: auto;"
+     alt="...">
+    <div>
+        <div class="brand-name">DLFOffice</div>
         <div class="brand-sub">ระบบบริหารการจองห้องประชุมและยานพาหนะส่วนกลาง</div>
       </div>
     </div>
@@ -381,12 +446,26 @@ input[type="time"] { -webkit-appearance:none;appearance:none; }
   </header>
 
   <!-- ══════════════════════════════════════════
-       TOP GRID: Form (left) + Stats+Recent (right)
+       MAIN 3-COLUMN GRID: Calendar | Form | Upcoming
   ═══════════════════════════════════════════════ -->
-  <div class="top-grid">
+  <div class="main-grid">
 
-    <!-- ── LEFT: Inline booking form ── -->
-    <div class="panel">
+    <!-- ── LEFT: Calendar ── -->
+    <div class="panel cal-col">
+      <div class="cal-inner">
+        <div class="cal-header">
+          <button id="cal-prev" class="icon-btn" aria-label="เดือนก่อน"><i data-lucide="chevron-left"></i></button>
+          <div id="cal-month-label" class="cal-month-label"></div>
+          <button id="cal-next" class="icon-btn" aria-label="เดือนหน้า"><i data-lucide="chevron-right"></i></button>
+        </div>
+        <div id="cal-grid"></div>
+      </div>
+      <div class="cal-sep"></div>
+      <div id="cal-day-list"></div>
+    </div>
+
+    <!-- ── CENTER: Inline booking form ── -->
+    <div class="panel form-main-panel">
       <div class="form-tabs">
         <button id="form-tab-room" class="form-tab active">
           <i data-lucide="building-2"></i> จองห้องประชุม
@@ -414,10 +493,6 @@ input[type="time"] { -webkit-appearance:none;appearance:none; }
             </div>
           </div>
           <div class="field-row">
-            <div class="field">
-              <label>เบอร์โทรศัพท์ติดต่อ</label>
-              <input id="i-room-phone" type="text" placeholder="ระบุเบอร์โทรศัพท์">
-            </div>
             <div class="field">
               <label>จำนวนผู้เข้าร่วม (ท่าน)</label>
               <input id="i-room-attendees" type="number" min="1" value="1" placeholder="ระบุจำนวนคน">
@@ -508,7 +583,7 @@ input[type="time"] { -webkit-appearance:none;appearance:none; }
       </div>
     </div>
 
-    <!-- ── RIGHT: Stats + Recent ── -->
+    <!-- ── RIGHT: Stats + Upcoming ── -->
     <div class="stats-col">
       <!-- Stat cards -->
       <div class="stat-cards">
@@ -542,22 +617,7 @@ input[type="time"] { -webkit-appearance:none;appearance:none; }
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ══════════════════════════════════════════
-       CALENDAR SECTION
-  ═══════════════════════════════════════════════ -->
-  <div class="panel cal-section">
-    <div class="cal-inner">
-      <div class="cal-header">
-        <button id="cal-prev" class="icon-btn" aria-label="เดือนก่อน"><i data-lucide="chevron-left"></i></button>
-        <div id="cal-month-label" class="cal-month-label"></div>
-        <button id="cal-next" class="icon-btn" aria-label="เดือนหน้า"><i data-lucide="chevron-right"></i></button>
-      </div>
-      <div id="cal-grid"></div>
-    </div>
-    <div class="cal-sep"></div>
-    <div id="cal-day-list"></div>
   </div>
 
   <!-- ══════════════════════════════════════════
@@ -652,9 +712,39 @@ input[type="time"] { -webkit-appearance:none;appearance:none; }
   </div>
 </div>
 
+<!-- ── PREVIEW MODAL ── -->
+<div id="preview-backdrop" class="preview-backdrop" aria-hidden="true">
+  <div class="preview-box" role="dialog" aria-modal="true">
+    <div class="preview-head">
+      <div class="preview-head-left">
+        <div id="preview-kind-badge" class="preview-kind-badge room"><i data-lucide="building-2" style="width:12px;height:12px;"></i> <span id="preview-kind-label">ห้องประชุม</span></div>
+        <div id="preview-title" class="preview-title">ชื่อห้อง</div>
+      </div>
+      <button id="preview-close-x" class="icon-btn" aria-label="ปิด"><i data-lucide="x"></i></button>
+    </div>
+    <div class="preview-body">
+      <div id="preview-time-block" class="preview-time-block">
+        <i data-lucide="clock" style="width:16px;height:16px;"></i>
+        <span id="preview-date-str">–</span>
+        &nbsp;·&nbsp;
+        <span id="preview-time-str">–</span>
+      </div>
+      <div class="preview-section" id="preview-section-main"></div>
+      <div class="preview-section" id="preview-section-extra" style="display:none;"></div>
+    </div>
+    <div class="preview-foot">
+      <button id="preview-del-btn" class="btn-preview-del"><i data-lucide="trash-2"></i> ลบรายการ</button>
+      <div style="display:flex;gap:8px;">
+        <button id="preview-close-btn" class="btn-preview-close">ปิด</button>
+        <button id="preview-edit-btn" class="btn-preview-edit"><i data-lucide="pencil"></i> แก้ไข</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="gas-config-panel" class="gas-config-panel" style="position:fixed;bottom:70px;right:22px;width:340px;z-index:100;">
   <label class="gas-config-label">Google Apps Script Web App URL</label>
-  <input id="gas-url-input" type="text" placeholder="https://script.google.com/macros/s/AKfycbw48SyM7VvsfJycb9DnG-gAGMqHXwW7z_wZQME-89SDWtuf8fTbkL1flm3nm7vkpcp2jA/exec">
+  <input id="gas-url-input" type="text" placeholder="https://script.google.com/macros/s/AKfycbzAIeXbU3okMMn1H7DQKU7slbo4Ll4IpTMLskVzJw2FsKQRYot5uyu190RExo_-S9Vinw/exec">
   <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
     <span id="gas-status-badge" class="gas-status none">● ยังไม่ได้ตั้งค่า</span>
     <div style="display:flex;gap:6px;">
@@ -684,7 +774,8 @@ function ymd(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDat
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function todayStr(){return ymd(new Date());}
 function fmtThaiDate(s){if(!s)return'-';const[y,m,d]=s.split('-').map(Number);return `${pad(d)} ${MONTHS[m-1]} ${y+543}`;}
-function fmtTime(t){if(!t||t==='--:--')return '-';return t;}
+function fmtTime(t){if(!t||t==='--:--'||t==='')return '-';const[h,m]=t.split(':');return `${pad(parseInt(h,10))}:${(m||'00').slice(0,2)}`;}
+
 function escapeHtml(s){if(s===undefined||s===null)return'';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function roomColorClass(roomName){const i=ROOMS.indexOf(roomName);return i>=0?ROOM_COLORS[i%ROOM_COLORS.length]:'r0';}
 
@@ -775,24 +866,35 @@ function renderRecent(){
   attachCardClickHandlers(el);
 }
 
-/* ── Compact upcoming card ── */
+/* ── Compact upcoming card (bigger) ── */
 function upcomingCardHtml(e,kind){
   if(kind==='room'){
     const rc=ROOMS.indexOf(e.room)%ROOM_COLORS.length;
-    return `<div class="day-card rc${rc}" data-kind="room" data-id="${e.id}" style="padding:9px 12px;margin-bottom:6px;">
-      <div class="row1" style="font-size:.8rem;margin-bottom:3px;">
-        <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;">${escapeHtml(e.room)}</span>
-        <span class="badge r${rc}" style="font-size:.62rem;">${fmtTime(e.timeStart)}–${fmtTime(e.timeEnd)}</span>
+    const colorVar=`var(--r${rc})`;
+    const softVar=`var(--r${rc}-soft)`;
+    return `<div class="upcoming-card-lg rc${rc}" data-kind="room" data-id="${e.id}" style="border-left-color:${colorVar}">
+      <div class="uc-top">
+        <span class="uc-name">${escapeHtml(e.room)}</span>
+        <span class="uc-time" style="background:${softVar};color:${colorVar};">${fmtTime(e.timeStart)}–${fmtTime(e.timeEnd)}</span>
       </div>
-      <div class="meta" style="font-size:.72rem;">${escapeHtml(e.requester||'')} · ${escapeHtml(e.purpose||'').slice(0,30)}${(e.purpose||'').length>30?'…':''}</div>
+      <div class="uc-meta">
+        <b style="color:var(--ink);">${escapeHtml(e.requester||'–')}</b>
+        ${e.dept?`· ${escapeHtml(e.dept)}`:''}
+        <br>${escapeHtml((e.purpose||'').slice(0,40))}${(e.purpose||'').length>40?'…':''}
+      </div>
     </div>`;
   } else {
-    return `<div class="day-card" data-kind="car" data-id="${e.id}" style="padding:9px 12px;margin-bottom:6px;border-left-color:var(--car);">
-      <div class="row1" style="font-size:.8rem;margin-bottom:3px;">
-        <span>${escapeHtml(e.plate)} — ${escapeHtml(e.driver)}</span>
-        <span class="badge car" style="font-size:.62rem;">${fmtTime(e.timeStart)}–${fmtTime(e.timeEnd)}</span>
+    return `<div class="upcoming-card-lg" data-kind="car" data-id="${e.id}" style="border-left-color:var(--car);">
+      <div class="uc-top">
+        <span class="uc-name">${escapeHtml(e.plate)} — ${escapeHtml(e.driver)}</span>
+        <span class="uc-time" style="background:var(--car-soft);color:var(--car-dark);">${fmtTime(e.timeStart)}–${fmtTime(e.timeEnd)}</span>
       </div>
-      <div class="meta" style="font-size:.72rem;">${escapeHtml(e.requester||'')} · ${escapeHtml(e.purpose||'').slice(0,30)}${(e.purpose||'').length>30?'…':''}</div>
+      <div class="uc-meta">
+        <b style="color:var(--ink);">${escapeHtml(e.requester||'–')}</b>
+        ${e.dept?`· ${escapeHtml(e.dept)}`:''}
+        <br>${escapeHtml((e.purpose||'').slice(0,40))}${(e.purpose||'').length>40?'…':''}
+        ${e.destination?`· ${escapeHtml(e.destination)}`:''}
+      </div>
     </div>`;
   }
 }
@@ -824,11 +926,11 @@ function entryCardHtml(e,kind){
 }
 
 function attachCardClickHandlers(container){
-  container.querySelectorAll('.day-card').forEach(card=>{
+  container.querySelectorAll('.day-card, .upcoming-card-lg').forEach(card=>{
     card.addEventListener('click',()=>{
       const id=card.dataset.id,kind=card.dataset.kind;
       const entry=(kind==='room'?ROOM_BOOKINGS:CAR_BOOKINGS).find(x=>x.id===id);
-      if(entry) openModal(kind,entry);
+      if(entry) showPreview(kind,entry);
     });
   });
 }
@@ -1046,6 +1148,93 @@ document.getElementById('inline-submit-btn').addEventListener('click',async()=>{
   renderAll();
 });
 
+/* ── Preview ── */
+let _previewKind=null,_previewId=null;
+const previewBackdrop=document.getElementById('preview-backdrop');
+
+function showPreview(kind,entry){
+  _previewKind=kind; _previewId=entry.id;
+  // Kind badge — rebuild innerHTML so lucide can re-process the new <i>
+  const badge=document.getElementById('preview-kind-badge');
+  badge.className='preview-kind-badge '+(kind==='room'?'room':'car');
+  badge.innerHTML=`<i data-lucide="${kind==='room'?'building-2':'car'}" style="width:12px;height:12px;"></i> ${kind==='room'?'ห้องประชุม':'รถยนต์'}`;
+  // Title
+  document.getElementById('preview-title').textContent=kind==='room'?(entry.room||'–'):`${entry.plate||'–'} — ${entry.driver||'–'}`;
+  // Time block
+  document.getElementById('preview-date-str').textContent=fmtThaiDate(entry.date);
+  document.getElementById('preview-time-str').textContent=`${fmtTime(entry.timeStart)} – ${fmtTime(entry.timeEnd)} น.`;
+  // Main section
+  const main=document.getElementById('preview-section-main');
+  if(kind==='room'){
+    main.innerHTML=`
+      <div class="preview-row"><span class="preview-label">ห้องประชุม</span><span class="preview-val">${escapeHtml(entry.room||'–')}</span></div>
+      <div class="preview-row"><span class="preview-label">ผู้จอง</span><span class="preview-val">${escapeHtml(entry.requester||'–')}</span></div>
+      <div class="preview-row"><span class="preview-label">หน่วยงาน</span><span class="preview-val">${escapeHtml(entry.dept||'–')}</span></div>
+      <div class="preview-row"><span class="preview-label">จำนวนผู้เข้าร่วม</span><span class="preview-val">${entry.attendees||1} คน</span></div>
+      <div class="preview-row"><span class="preview-label">วัตถุประสงค์</span><span class="preview-val">${escapeHtml(entry.purpose||'–')}</span></div>
+      ${entry.note?`<div class="preview-row"><span class="preview-label">หมายเหตุ</span><span class="preview-val">${escapeHtml(entry.note)}</span></div>`:''}
+    `;
+  } else {
+    const companions=(entry.companions&&entry.companions.length)?entry.companions.map(escapeHtml).join(', '):'–';
+    main.innerHTML=`
+      <div class="preview-row"><span class="preview-label">ผู้ขอใช้รถ</span><span class="preview-val">${escapeHtml(entry.requester||'–')}</span></div>
+      <div class="preview-row"><span class="preview-label">หน่วยงาน</span><span class="preview-val">${escapeHtml(entry.dept||'–')}</span></div>
+      <div class="preview-row"><span class="preview-label">วัตถุประสงค์</span><span class="preview-val">${escapeHtml(entry.purpose||'–')}</span></div>
+      <div class="preview-row"><span class="preview-label">สถานที่</span><span class="preview-val">${escapeHtml(entry.destination||'–')}</span></div>
+      <div class="preview-row"><span class="preview-label">จำนวนผู้เดินทาง</span><span class="preview-val">${entry.numPeople||1} คน</span></div>
+      <div class="preview-row"><span class="preview-label">ผู้ร่วมเดินทาง</span><span class="preview-val">${companions}</span></div>
+      <div class="preview-row"><span class="preview-label">ทะเบียนรถ</span><span class="preview-val">${escapeHtml(entry.plate||'–')}</span></div>
+      <div class="preview-row"><span class="preview-label">พนักงานขับรถ</span><span class="preview-val">${escapeHtml(entry.driver||'–')}</span></div>
+    `;
+  }
+  document.getElementById('preview-section-extra').style.display='none';
+  lucide.createIcons();
+  previewBackdrop.classList.add('show'); previewBackdrop.setAttribute('aria-hidden','false');
+}
+
+function closePreview(){
+  previewBackdrop.classList.remove('show'); previewBackdrop.setAttribute('aria-hidden','true');
+  _previewKind=null; _previewId=null;
+}
+
+document.getElementById('preview-close-x').addEventListener('click',closePreview);
+document.getElementById('preview-close-btn').addEventListener('click',closePreview);
+previewBackdrop.addEventListener('mousedown',e=>{if(e.target===previewBackdrop)e._clickedBg=true;});
+previewBackdrop.addEventListener('click',e=>{if(e._clickedBg)closePreview();});
+
+document.getElementById('preview-edit-btn').addEventListener('click',()=>{
+  if(!_previewKind||!_previewId)return;
+  const entry=(_previewKind==='room'?ROOM_BOOKINGS:CAR_BOOKINGS).find(x=>x.id===_previewId);
+  closePreview();
+  if(entry) openModal(_previewKind,entry);
+});
+
+document.getElementById('preview-del-btn').addEventListener('click',async()=>{
+  if(!_previewKind||!_previewId)return;
+  const ok=await showPopup({type:'warning',title:'ยืนยันการลบ',msg:'คุณต้องการลบรายการนี้ใช่ไหม? ไม่สามารถกู้คืนได้',okLabel:'ลบ',cancelLabel:'ยกเลิก'});
+  if(!ok)return;
+  if(_previewKind==='room'){ROOM_BOOKINGS=ROOM_BOOKINGS.filter(r=>r.id!==_previewId);await saveRooms();}
+  else{CAR_BOOKINGS=CAR_BOOKINGS.filter(c=>c.id!==_previewId);await saveCars();}
+  closePreview();
+  await showPopup({type:'success',title:'ลบรายการแล้ว',msg:'ลบข้อมูลการจองออกจากระบบเรียบร้อย'});
+  renderAll();
+});
+
+/* ── Stat card click → scroll to upcoming ── */
+document.querySelectorAll('.stat-card').forEach((card,idx)=>{
+  card.addEventListener('click',()=>{
+    const kind=idx===0?'room':'car';
+    // Switch list tab
+    listTab=kind;
+    document.getElementById('list-tab-room').classList.toggle('active',kind==='room');
+    document.getElementById('list-tab-car').classList.toggle('active',kind==='car');
+    calSelectedDate=todayStr(); renderCalendar();
+    renderListModal();
+    // scroll to all-bookings list
+    document.querySelector('.list-section').scrollIntoView({behavior:'smooth',block:'start'});
+  });
+});
+
 /* ── Modal (edit) ── */
 const modal=document.getElementById('request-modal');
 const modalHeading=document.getElementById('modalHeading');
@@ -1163,6 +1352,7 @@ document.getElementById('delete-entry-btn').addEventListener('click',async()=>{
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     if(document.getElementById('popup-overlay').classList.contains('show')){closePopup(false);return;}
+    if(previewBackdrop.classList.contains('show')){closePreview();return;}
     if(modal.classList.contains('show'))closeModal();
   }
 });
