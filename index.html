@@ -58,13 +58,17 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  background:
-    radial-gradient(ellipse 55% 45% at 85% 8%, rgba(var(--accent-r),var(--accent-g),var(--accent-b),.06) 0%, transparent 55%),
-    radial-gradient(ellipse 40% 40% at 5% 90%, rgba(16,185,129,.04) 0%, transparent 50%);
-  pointer-events: none; z-index: 0;
+body {
+  background: linear-gradient(135deg, #e0e7ff 0%, #f0f9ff 30%, #fdf4ff 60%, #f0fdf4 100%);
+  background-size: 400% 400%;
+  animation: bgShift 12s ease infinite;
+  min-height: 100vh;
+  margin: 0;
+}
+@keyframes bgShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* ─── LAYOUT ─── */
@@ -888,7 +892,7 @@ input[type="time"] { -webkit-appearance:none;appearance:none; }
 
 <div id="gas-config-panel" class="gas-config-panel" style="position:fixed;bottom:70px;right:22px;width:340px;z-index:100;">
   <label class="gas-config-label">Google Apps Script Web App URL</label>
-  <input id="gas-url-input" type="text" placeholder="https://script.google.com/macros/s/AKfycbzAIeXbU3okMMn1H7DQKU7slbo4Ll4IpTMLskVzJw2FsKQRYot5uyu190RExo_-S9Vinw/exec">
+  <input id="gas-url-input" type="text" placeholder="https://script.google.com/macros/s/AKfycbwKLQD2oomrk6Mhj0GHiEcXzEowcX8Ju9Bjt_-yStKsAALBDHzu3PHRa25GcnhQsyRoMw/exec">
   <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
     <span id="gas-status-badge" class="gas-status none">● ยังไม่ได้ตั้งค่า</span>
     <div style="display:flex;gap:6px;">
@@ -903,11 +907,6 @@ input[type="time"] { -webkit-appearance:none;appearance:none; }
 const ROOMS = ["ห้องประชุม อาคาร A ชั้น 1","ห้องประชุม อาคาร A1 ชั้น 2 (ห้องสตูดิโอ)","ห้องประชุม อาคาร B ชั้น 1","ห้องประชุม อาคาร B ชั้น 2","ห้องประชุมศูนย์การเรียนรู้อาคาร D"];
 const DEPTS = ["กลุ่มนโยบายและแผน","กลุ่มประชาสัมพันธ์และสื่อสารองค์กร","กลุ่มงานสนับสนุน","กลุ่มวิชาการ","กลุ่มการเงินและบัญชี","กลุ่มบริหารทั่วไป","กลุ่มสารสนเทศ"];
 const VEHICLES = [{"plate":"ฮอ 4133","driver":"นายอดิศร แสงไชย"},{"plate":"ฮอ 2983","driver":"นายพิษณุพจน์ สิทธิธนาสกุล"}];
-
-const SEED_ROOMS = [{"room":"ห้องประชุม อาคาร A1 ชั้น 1","date":"2025-08-13","timeStart":"09:30","timeEnd":"12:00","dept":"นโยบายและแผน","requester":"จินตนา วรรณยง","purpose":"ประชุมคณะอนุกรรมการด้านนโยบายและแผนงาน","note":""},{"room":"ห้องประชุม อาคาร A1 ชั้น 1","date":"2025-08-08","timeStart":"09:30","timeEnd":"11:00","dept":"นโยบายและแผน","requester":"จินตนา วรรณยง","purpose":"ประชุมสร้างความรู้ความเข้าใจการบริหารจัดการความเสี่ยง","note":""},{"room":"ห้องประชุม อาคาร A1 ชั้น 1","date":"2025-08-07","timeStart":"09:30","timeEnd":"16:00","dept":"วิชาการ","requester":"ทิพจุฑา ชุนเกษา","purpose":"ประชุมยกร่างเครื่องมือการประเมิน Best Practice ของมูลนิธิฯ","note":""},{"room":"ห้องประชุม อาคาร A1 ชั้น 1","date":"2025-08-07","timeStart":"13:30","timeEnd":"","dept":null,"requester":null,"purpose":"ประชุมอนุกลั่นกรองพิจารณาการจัดจ้างใบงาน 2/68","note":""},{"room":"ห้องประชุม อาคาร B ชั้น 1","date":"2025-08-06","timeStart":"13:30","timeEnd":"","dept":"สนับสนุน","requester":"ณัฏฐา ปัดแก้ว","purpose":"ประชุมพิจารณาจัดจ้างใบงาน 2/68","note":""},{"room":"ห้องประชุม อาคาร A1 ชั้น 1","date":"2025-08-04","timeStart":"09:30","timeEnd":"12:00","dept":"สารสนเทศ","requester":"ช่อเพชร งามลาภ","purpose":"ประชุมหารือเกี่ยวกับการปรับปรุงอุปกรณ์ระบบออกอากาศสถานีฯ","note":""},{"room":"ห้องประชุม อาคาร A1 ชั้น 1","date":"2025-07-30","timeStart":"13:30","timeEnd":"16:30","dept":"สารสนเทศ","requester":"ช่อเพชร งามลาภ","purpose":"ประชุมติดตามความคืบหน้าในการพัฒนาระบบ DLTV Learning Platform ครั้งที่ 9","note":""},{"room":"ห้องประชุม อาคาร B ชั้น 1","date":"2025-07-29","timeStart":"11:00","timeEnd":"","dept":"วิชาการ","requester":"ศิริรัตน์  มูลไชยศรี","purpose":"ประชุมเฉพาะผู้ใหญ่","note":""},{"room":"ห้องประชุม อาคาร A1 ชั้น 1","date":"2025-07-26","timeStart":"08:30","timeEnd":"16:30","dept":"สื่อสารองค์กร","requester":"สุวิมล วัฒนะพาณิชมงคล","purpose":"ประชุมลงพื้นที่ชุมชนร่วมกับ มรภ.บ้านสมเด็จ","note":""},{"room":"ห้องประชุม อาคาร A1 ชั้น 1","date":"2025-07-23","timeStart":"09:30","timeEnd":"12:00","dept":"สารสนเทศ","requester":"ช่อเพชร งามลาภ","purpose":"ประชุมคณะกรรมการตรวจรับ DLTV Learning Platform","note":""},{"room":"ห้องประชุม อาคาร A1 ชั้น 1","date":"2025-06-30","timeStart":"09:30","timeEnd":"12:00","dept":"สารสนเทศ","requester":"ช่อเพชร งามลาภ","purpose":"ประชุมติดตามความคืบหน้าในการพัฒนาระบบ DLTV Learning Platform ครั้งที่ 8","note":""}];
-
-const SEED_CARS = [{"requester":"นางสาวฐิติรัตนย์  มากใย","dept":"บริหารทั่วไป","purpose":"รับข้าวกลางวัน","destination":"ศาลเจ้าพ่อเสือ","numPeople":1,"date":"2024-12-13","timeStart":"10:20","timeEnd":"","plate":"ฮอ 2983","driver":"นายพิษณุพจน์  สิทธิธนาสกุล"},{"requester":"นางวณิชญาย์ ทางธรรม","dept":"การเงินและบัญชี","purpose":"ธุรกรรมทางการเงิน","destination":"ธนาคารกรุงไทย","numPeople":1,"date":"2024-12-08","timeStart":"09:30","timeEnd":"","plate":"2983","driver":"นายพิษณุพจน์  สิทธิธนาสกุล"},{"requester":"นางสาวช่อเพชร  งามลาภ","dept":"สารสนเทศ","purpose":"รับ - ส่ง แฟ้มเสนอลงนาม","destination":"กองกิจการในพระองค์ 904","numPeople":2,"date":"2024-02-01","timeStart":"13:30","timeEnd":"","plate":"ฮอ 2983","driver":"นายพิษณุพจน์  สิทธิธนาสกุล"}];
-
 const MONTHS=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const DOW_TH=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
 const ROOM_COLORS=['r0','r1','r2','r3','r4'];
@@ -929,6 +928,23 @@ function fmtTimeRange(s,e){
 /* normDate: แปลง BE→AD ถ้า browser ส่งปีเกิน 2400 มา */
 function normDate(v){if(!v)return '';const p=v.split('-');if(p.length===3&&parseInt(p[0])>2400){p[0]=String(parseInt(p[0])-543);return p.join('-');}return v;}
 
+/* normalizeTime: แปลงค่าเวลาที่อาจมาจาก GAS (Date/number/string) → "HH:MM"
+   GAS อ่านเวลาจาก Sheets อาจส่งมาเป็น Date string หรือ fraction number */
+function normalizeTime(t){
+  if(!t||t===''||t===0) return '';
+  const s=String(t).trim();
+  // "HH:MM" อยู่แล้ว
+  if(/^\d{1,2}:\d{2}$/.test(s)){const[h,m]=s.split(':');return pad(parseInt(h,10))+':'+m.padStart(2,'0');}
+  // fraction number เช่น "0.375" = 09:00
+  const n=parseFloat(s);
+  if(!isNaN(n)&&n>0&&n<1){const tot=Math.round(n*24*60);return pad(Math.floor(tot/60)%24)+':'+pad(tot%60);}
+  // Date string จาก GAS เช่น "Sat Dec 30 1899 09:00:00 GMT+0700"
+  const d=new Date(s);
+  if(!isNaN(d.getTime())&&(d.getHours()!==0||d.getMinutes()!==0)){return pad(d.getHours())+':'+pad(d.getMinutes());}
+  return '';
+}
+function normBooking(x){return {...x,date:normDate(x.date||''),timeStart:normalizeTime(x.timeStart),timeEnd:normalizeTime(x.timeEnd)};}
+
 function escapeHtml(s){if(s===undefined||s===null)return'';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function roomColorClass(roomName){const i=ROOMS.indexOf(roomName);return i>=0?ROOM_COLORS[i%ROOM_COLORS.length]:'r0';}
 
@@ -943,8 +959,8 @@ async function loadData(){
       const r=await fetch(GAS_URL+'?action=data&t='+Date.now(),{cache:'no-store'});
       const j=await r.json();
       if(j.ok&&(j.rooms||j.cars)){
-        ROOM_BOOKINGS=(j.rooms||[]).map(x=>({...x,id:x.id||uid(),kind:'room',date:normDate(x.date||'')}));
-        CAR_BOOKINGS=(j.cars||[]).map(x=>({...x,id:x.id||uid(),kind:'car',date:normDate(x.date||'')}));
+        ROOM_BOOKINGS=(j.rooms||[]).map(x=>normBooking({...x,id:x.id||uid(),kind:'room'}));
+        CAR_BOOKINGS=(j.cars||[]).map(x=>normBooking({...x,id:x.id||uid(),kind:'car'}));
         try{localStorage.setItem('room_bookings',JSON.stringify(ROOM_BOOKINGS));localStorage.setItem('car_bookings',JSON.stringify(CAR_BOOKINGS));}catch(e){}
         return;
       }
@@ -953,8 +969,8 @@ async function loadData(){
   try{
     const rs=localStorage.getItem('room_bookings');
     const cs=localStorage.getItem('car_bookings');
-    ROOM_BOOKINGS=rs?JSON.parse(rs).map(x=>({...x,date:normDate(x.date||'')})):SEED_ROOMS.map(x=>({...x,id:uid(),kind:'room',attendees:x.attendees||1}));
-    CAR_BOOKINGS=cs?JSON.parse(cs).map(x=>({...x,date:normDate(x.date||'')})):SEED_CARS.map(x=>({...x,id:uid(),kind:'car'}));
+    ROOM_BOOKINGS=rs?JSON.parse(rs).map(x=>normBooking(x)):SEED_ROOMS.map(x=>({...x,id:uid(),kind:'room',attendees:x.attendees||1}));
+    CAR_BOOKINGS=cs?JSON.parse(cs).map(x=>normBooking(x)):SEED_CARS.map(x=>({...x,id:uid(),kind:'car'}));
   }catch(e){
     ROOM_BOOKINGS=SEED_ROOMS.map(x=>({...x,id:uid(),kind:'room',attendees:x.attendees||1}));
     CAR_BOOKINGS=SEED_CARS.map(x=>({...x,id:uid(),kind:'car'}));
